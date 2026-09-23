@@ -1,92 +1,74 @@
-# simple-agent
+# Easy Holiday 🌴✈️
 
-Simple ReAct agent
-Agent generated with `agents-cli` version `1.1.0`
+An AI-powered travel planning agent for India built with Vertex AI Reasoning Engine (ADK 1.1.0) and A2UI.
+
+![Easy Holiday Demo](demo.gif)
+
+## Overview
+
+**Easy Holiday** is a Pune-based India travel planner that crafts personalized holiday itineraries. It remembers traveler preferences via Vertex AI Memory Bank, queries curated Firestore collections for Indian destinations and national public holidays, retrieves live weather forecasts and exchange rates, generates custom travel posters, and renders rich interactive card UI components using A2UI.
+
+## Key Features
+
+- **Personalized Travel Preferences (Memory Bank)**: Integrated with Vertex AI Memory Bank to retain user-specific preferences:
+  - **Home City**: Pune, India (`lat: 18.5204`, `lon: 73.8567`)
+  - **Home Currency**: `INR` (`₹`)
+  - **Budget Level**: Moderate
+  - **Diet**: Vegetarian
+  - **Travel Pace**: Relaxed
+  - **Interests**: Nature, Culture, Beaches, Local Food
+- **Firestore Collections**:
+  - `destinations`: Indian travel spots (Palolem, Panaji, Lonavala, Mahabaleshwar, Hampi, Rishikesh) with average daily budgets, best seasons, and highlights.
+  - `public_holidays`: India's official 2026 national public holidays.
+- **Live Weather & Exchange Rates**:
+  - **Open-Meteo API**: Live geocoding and daily weather forecasts.
+  - **Frankfurter API**: Live `INR` currency exchange rates.
+- **AI Travel Poster Generation**: Generates custom travel posters using `gemini-3.1-flash-lite-image` in the global region, saved to `gs://easy-holiday-qwiklabs-gcp-01-1b134bc81ede` with public URLs and Playground artifact compatibility.
+- **Code Execution Sandbox**: Secure code execution powered by `AgentEngineSandboxCodeExecutor`.
+- **A2UI Interactive Cards**: Generates structured A2UI UI card components (`a2ui-agent-sdk` v0.8 Basic Catalog).
+- **FastAPI Proxy & Web UI**: Minimal proxy server and plain HTML/JS chat frontend communicating over the A2A protocol.
 
 ## Project Structure
 
 ```
-simple-agent/
-├── app/         # Core agent code
-│   ├── agent.py               # Main agent logic
-│   ├── fast_api_app.py        # FastAPI Backend server
-│   └── app_utils/             # App utilities and helpers
-├── tests/                     # Unit, integration, and load tests
-├── GEMINI.md                  # AI-assisted development guide
-└── pyproject.toml             # Project dependencies
+easy_holiday/
+├── app/
+│   ├── agent.py               # Root ADK agent, tools, Memory Bank, sandbox & callback
+│   ├── a2ui_utils.py          # A2UI callback transformer
+│   └── app_utils/             # ADK application utilities
+├── frontend/
+│   ├── main.py                # FastAPI proxy server (A2A client)
+│   ├── requirements.txt       # Frontend proxy dependencies
+│   └── static/index.html      # Rebranded A2UI chat interface
+├── seed_firestore.py          # Firestore database seeding script
+├── agents-cli-manifest.yaml   # Agent Engine configuration manifest
+├── pyproject.toml             # Python project dependencies
+└── demo.gif                   # Recorded application demo
 ```
 
-> 💡 **Tip:** Use [Antigravity CLI](https://antigravity.google/) for AI-assisted development - project context is pre-configured in `GEMINI.md`.
+## Running Locally
 
-## Requirements
+### Prerequisites
 
-Before you begin, ensure you have:
-- **uv**: Python package manager (used for all dependency management in this project) - [Install](https://docs.astral.sh/uv/getting-started/installation/) ([add packages](https://docs.astral.sh/uv/concepts/dependencies/) with `uv add <package>`)
-- **agents-cli**: Agents CLI - Install with `uv tool install google-agents-cli`
-- **Google Cloud SDK**: For GCP services - [Install](https://cloud.google.com/sdk/docs/install)
+- Python 3.10+
+- `uv` package manager
+- Google Cloud SDK (`gcloud auth application-default login`)
 
+### Setup & Execution
 
-## Quick Start
+1. **Install Dependencies**:
+   ```bash
+   uv sync
+   uv pip install -r frontend/requirements.txt
+   ```
 
-Install `agents-cli` and its skills if not already installed:
+2. **Start the Frontend Proxy Server**:
+   ```bash
+   cd frontend
+   AGENT_ENGINE_RESOURCE_NAME="projects/671741015434/locations/us-east4/reasoningEngines/3831301043543605248" \
+   AGENT_DIRECTORY="app" \
+   python main.py
+   ```
 
-```bash
-uvx google-agents-cli setup
-```
-
-Install required packages:
-
-```bash
-agents-cli install
-```
-
-Test the agent with a local web server:
-
-```bash
-agents-cli playground
-```
-
-You can also use features from the [ADK](https://adk.dev/) CLI with `uv run adk`.
-
-## Commands
-
-| Command              | Description                                                                                 |
-| -------------------- | ------------------------------------------------------------------------------------------- |
-| `agents-cli install` | Install dependencies using uv                                                         |
-| `agents-cli playground` | Launch local development environment                                                  |
-| `agents-cli lint`    | Run code quality checks                                                               |
-| `agents-cli eval`    | Evaluate agent behavior (generate, grade, analyze, and more — see `agents-cli eval --help`) |
-| `uv run pytest tests/unit tests/integration` | Run unit and integration tests                                                        || [A2A Inspector](https://github.com/a2aproject/a2a-inspector) | Launch A2A Protocol Inspector                                                        |
-
-## 🛠️ Project Management
-
-| Command | What It Does |
-|---------|--------------|
-| `agents-cli scaffold enhance` | Add CI/CD pipelines and Terraform infrastructure |
-| `agents-cli infra cicd` | One-command setup of entire CI/CD pipeline + infrastructure |
-| `agents-cli scaffold upgrade` | Auto-upgrade to latest version while preserving customizations |
-
----
-
-## Development
-
-Edit your agent logic in `app/agent.py` and test with `agents-cli playground` - it auto-reloads on save.
-
-## Deployment
-
-```bash
-gcloud config set project <your-project-id>
-agents-cli deploy
-```
-
-To add CI/CD and Terraform, run `agents-cli scaffold enhance`.
-To set up your production infrastructure, run `agents-cli infra cicd`.
-
-## Observability
-
-Built-in telemetry exports to Cloud Trace, BigQuery, and Cloud Logging.
-
-## A2A Inspector
-
-This agent supports the [A2A Protocol](https://a2a-protocol.org/). Use the [A2A Inspector](https://github.com/a2aproject/a2a-inspector) to test interoperability.
-See the [A2A Inspector docs](https://github.com/a2aproject/a2a-inspector) for details.
+3. **Access the Web UI**:
+   Open your web browser and navigate to `http://localhost:8080`.
